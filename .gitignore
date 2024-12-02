@@ -1,2 +1,13 @@
 venv/
 *.dylib
+venv/
+*.env
+pycache/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.vscode/
+.idea/
+backend/.env
