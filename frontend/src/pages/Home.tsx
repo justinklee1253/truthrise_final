@@ -1,161 +1,3 @@
-// import { useState } from 'react';
-// import {
-//   Container,
-//   TextField,
-//   Button,
-//   Typography,
-//   Box,
-//   Card,
-//   CardContent,
-//   Snackbar,
-//   Alert,
-//   CircularProgress
-// } from '@mui/material';
-// import { useUser } from '@clerk/clerk-react';
-// import axios from 'axios';
-
-// interface SummaryResult {
-//   summary: string;
-//   created_at: string;
-// }
-
-// const Home = () => {
-//   const { user } = useUser();
-//   const [text, setText] = useState('');
-//   const [summary, setSummary] = useState<SummaryResult | null>(null);
-//   const [loading, setLoading] = useState(false);
-//   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setError(null);
-
-//     try {
-//       const response = await axios.post('http://localhost:8000/api/summarize', { text });
-//       setSummary(response.data);
-//     } catch (err) {
-//       setError('Failed to summarize the article. Please try again.');
-//       console.error(err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleSave = async () => {
-//     if (!summary || !user) return;
-
-//     try {
-//       await axios.post('http://localhost:8000/api/articles', {
-//         user_id: user.id,
-//         original_text: text,
-//         summary: summary.summary
-//       });
-//       setShowSaveSuccess(true);
-//     } catch (err) {
-//       setError('Failed to save the article. Please try again.');
-//       console.error(err);
-//     }
-//   };
-
-//   return (
-//     <Box sx={{ width: '100%', minHeight: 'calc(100vh - 64px)', bgcolor: '#f5f7fa', py: 4 }}>
-//       <Container maxWidth="lg">
-//         <Typography variant="h3" align="center" gutterBottom sx={{ color: '#1976d2' }}>
-//           News Summarizer
-//         </Typography>
-//         <Typography variant="h6" align="center" color="textSecondary" sx={{ mb: 4 }}>
-//           Transform lengthy articles into concise, accurate summaries using AI
-//         </Typography>
-
-//         <Card elevation={3}>
-//           <CardContent sx={{ p: 4 }}>
-//             <form onSubmit={handleSubmit}>
-//               <TextField
-//                 fullWidth
-//                 multiline
-//                 rows={8}
-//                 variant="outlined"
-//                 placeholder="Paste your article here..."
-//                 value={text}
-//                 onChange={(e) => setText(e.target.value)}
-//                 sx={{ mb: 2 }}
-//               />
-//               <Button
-//                 fullWidth
-//                 variant="contained"
-//                 type="submit"
-//                 disabled={loading || !text.trim()}
-//                 sx={{ 
-//                   height: 48,
-//                   background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-//                 }}
-//               >
-//                 {loading ? (
-//                   <>
-//                     <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />
-//                     Summarizing...
-//                   </>
-//                 ) : 'Summarize'}
-//               </Button>
-//             </form>
-
-//             {summary && (
-//               <Box sx={{ mt: 4 }}>
-//                 <Typography variant="h6" gutterBottom color="primary">
-//                   Summary
-//                 </Typography>
-//                 <Card variant="outlined" sx={{ bgcolor: '#f8f9fa', p: 2, mb: 2 }}>
-//                   <Typography variant="body1">
-//                     {summary.summary}
-//                   </Typography>
-//                 </Card>
-//                 {user && (
-//                   <Button
-//                     variant="outlined"
-//                     onClick={handleSave}
-//                     color="primary"
-//                   >
-//                     Save Article
-//                   </Button>
-//                 )}
-//               </Box>
-//             )}
-//           </CardContent>
-//         </Card>
-
-//         <Snackbar
-//           open={showSaveSuccess}
-//           autoHideDuration={3000}
-//           onClose={() => setShowSaveSuccess(false)}
-//           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-//         >
-//           <Alert severity="success" sx={{ width: '100%' }}>
-//             Article saved successfully!
-//           </Alert>
-//         </Snackbar>
-
-//         {error && (
-//           <Snackbar
-//             open={!!error}
-//             autoHideDuration={3000}
-//             onClose={() => setError(null)}
-//             anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-//           >
-//             <Alert severity="error" sx={{ width: '100%' }}>
-//               {error}
-//             </Alert>
-//           </Snackbar>
-//         )}
-//       </Container>
-//     </Box>
-//   );
-// };
-
-// export default Home;
-
-
 import { useState } from 'react';
 import {
   Container,
@@ -216,6 +58,7 @@ const Home = () => {
   const [outputFormat, setOutputFormat] = useState('default');
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState(0);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const styles = {
     balanced: { icon: <AutoAwesome />, label: 'Balanced', desc: 'Objective and comprehensive' },
@@ -268,7 +111,7 @@ const Home = () => {
       setLoading(false);
     }
   };
-
+  
   const handleSave = async () => {
     if (!result || !user) return;
     try {
@@ -277,12 +120,15 @@ const Home = () => {
         original_text: text,
         summary: result.summary,
       });
-      setError('Article saved successfully!');
+      
+      // Show success message
+      setSuccessMessage('Article saved successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setError('Failed to save article.');
-      console.error(err);
+      setError('Failed to save article. Please try again.');
+      console.error('Save error:', err);
     }
-  };
+};
 
   return (
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: 'calc(100vh - 64px)', py: 4 }}>
@@ -425,9 +271,21 @@ const Home = () => {
                 </Button>
               </form>
 
+              {/* {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {error}
+                </Alert>
+              )} */}
+
               {error && (
                 <Alert severity="error" sx={{ mt: 2 }}>
                   {error}
+                </Alert>
+              )}
+
+              {successMessage && (
+                <Alert severity="success" sx={{ mt: 2 }}>
+                  {successMessage}
                 </Alert>
               )}
 
@@ -435,7 +293,6 @@ const Home = () => {
                 <Box sx={{ mt: 4 }}>
                   <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
                     <Tab label="Summary" />
-                    <Tab label="Analysis" />
                   </Tabs>
                   
                   {activeTab === 0 && (
