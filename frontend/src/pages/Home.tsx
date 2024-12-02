@@ -29,7 +29,6 @@ import {
   Architecture,
   Science,
   TrendingUp,
-  CloudOff as PublicOffIcon,
   SaveAlt,
   Info as InfoOutlined,
 } from '@mui/icons-material';
@@ -291,7 +290,7 @@ const Home = () => {
 
               {result && (
                 <Box sx={{ mt: 4 }}>
-                  <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+                  <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
                     <Tab label="Summary" />
                   </Tabs>
                   
