@@ -237,6 +237,10 @@ TEXT TO SUMMARIZE:
 
 Remember to verify all checklist items before providing the final summary."""
 
+@app.get("/")
+def root():
+    return {"message": "Welcome to the TruthRise API!"}
+
 @app.post("/api/summarize")
 async def summarize_text(article: ArticleInput):
     if not article.text.strip():
