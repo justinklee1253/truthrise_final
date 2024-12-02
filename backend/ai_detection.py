@@ -84,29 +84,78 @@ def analyze_text_patterns(text: str) -> Dict[str, float]:
 #         logger.error(f"Error in AI detection: {str(e)}")
 #         raise HTTPException(status_code=500, detail="AI detection failed")
 
+# def detect_ai_content(client, text: str) -> Dict[str, Any]:
+#     try:
+#         patterns = analyze_text_patterns(text)
+#         response = client.chat.completions.create(
+#             model="gpt-3.5-turbo",
+#             messages=[{
+#                 "role": "system",
+#                 "content": "Analyze this text and determine if it's AI-generated. Consider writing style, natural language patterns, contextual understanding, and human-like nuances."
+#             }, {
+#                 "role": "user",
+#                 "content": f"Analyze this text:\n\n{text}"
+#             }],
+#             temperature=0.1
+#         )
+        
+#         analysis = response.choices[0].message.content
+#         is_ai = "ai-generated" in analysis.lower() or "appears to be ai" in analysis.lower()
+        
+#         pattern_score = sum(patterns.values()) / len(patterns)
+#         confidence = pattern_score * 0.8 + 0.2
+
+#         return {
+#             "is_ai_generated": is_ai,  # Changed from not is_human
+#             "confidence": confidence,
+#             "metrics": {
+#                 "pattern_analysis": patterns,
+#                 "style_indicators": {
+#                     "repetitive_patterns": patterns["unique_patterns"] < 0.6,
+#                     "uniform_sentences": patterns["sentence_variety"] < 0.5,
+#                     "mechanical_structure": patterns["avg_sentence_length"] > 0.7,
+#                     "limited_variety": patterns["lexical_diversity"] < 0.4
+#                 }
+#             },
+#             "analysis": analysis
+#         }
+#     except Exception as e:
+#         logger.error(f"Error in AI detection: {str(e)}")
+#         raise HTTPException(status_code=500, detail="AI detection failed")
+
 def detect_ai_content(client, text: str) -> Dict[str, Any]:
     try:
         patterns = analyze_text_patterns(text)
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{
-                "role": "system",
-                "content": "Analyze this text and determine if it's AI-generated. Consider writing style, natural language patterns, contextual understanding, and human-like nuances."
+                "role": "system", 
+                "content": """Analyze if this text is AI-generated. Look for:
+                1. Repetitive patterns
+                2. Natural language variations
+                3. Contextual understanding
+                4. Human-like nuances
+                First state either 'HUMAN_WRITTEN' or 'AI_GENERATED', then provide your analysis."""
             }, {
                 "role": "user",
-                "content": f"Analyze this text:\n\n{text}"
+                "content": f"Text:\n{text}"
             }],
             temperature=0.1
         )
         
         analysis = response.choices[0].message.content
-        is_ai = "ai-generated" in analysis.lower() or "appears to be ai" in analysis.lower()
+        # Check for AI markers in the actual analysis
+        is_ai = (
+            analysis.upper().startswith("AI_GENERATED") or 
+            "appears to be ai" in analysis.lower() or
+            "ai-generated" in analysis.lower()
+        )
         
         pattern_score = sum(patterns.values()) / len(patterns)
         confidence = pattern_score * 0.8 + 0.2
 
         return {
-            "is_ai_generated": is_ai,  # Changed from not is_human
+            "is_ai_generated": is_ai,
             "confidence": confidence,
             "metrics": {
                 "pattern_analysis": patterns,
@@ -117,7 +166,7 @@ def detect_ai_content(client, text: str) -> Dict[str, Any]:
                     "limited_variety": patterns["lexical_diversity"] < 0.4
                 }
             },
-            "analysis": analysis
+            "analysis": analysis.replace("AI_GENERATED", "").replace("HUMAN_WRITTEN", "").strip()
         }
     except Exception as e:
         logger.error(f"Error in AI detection: {str(e)}")
