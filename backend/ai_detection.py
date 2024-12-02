@@ -40,22 +40,16 @@ def analyze_text_patterns(text: str) -> Dict[str, float]:
             "sentence_variety": 0,
             "unique_patterns": 0
         }
-
 # def detect_ai_content(client, text: str) -> Dict[str, Any]:
 #     try:
-#         # Get basic pattern analysis
 #         patterns = analyze_text_patterns(text)
         
-#         # Use GPT to analyze the text
 #         response = client.chat.completions.create(
 #             model="gpt-3.5-turbo",
 #             messages=[
 #                 {
 #                     "role": "system",
-#                     "content": """Analyze this text and determine if it's AI-generated. 
-#                     Consider: writing style consistency, natural language patterns, 
-#                     contextual understanding, and human-like nuances. 
-#                     Rate confidence from 0.0 to 1.0."""
+#                     "content": "Analyze this text and determine if it's AI-generated. Consider writing style, natural language patterns, contextual understanding, and human-like nuances."
 #                 },
 #                 {
 #                     "role": "user",
@@ -65,16 +59,14 @@ def analyze_text_patterns(text: str) -> Dict[str, float]:
 #             temperature=0.1
 #         )
         
-#         # Calculate confidence score
+#         analysis = response.choices[0].message.content
+#         is_human = "human" in analysis.lower() and "generate" in analysis.lower()
+        
 #         pattern_score = sum(patterns.values()) / len(patterns)
-#         gpt_analysis = response.choices[0].message.content
-        
-#         # Determine if the text is AI-generated based on patterns and GPT analysis
-#         is_likely_ai = pattern_score > 0.7  # Threshold for AI detection
-#         confidence = pattern_score * 0.8 + 0.2  # Weighted score
-        
+#         confidence = pattern_score * 0.8 + 0.2
+
 #         return {
-#             "is_ai_generated": is_likely_ai,
+#             "is_ai_generated": not is_human,  # Flip based on analysis
 #             "confidence": confidence,
 #             "metrics": {
 #                 "pattern_analysis": patterns,
@@ -85,7 +77,7 @@ def analyze_text_patterns(text: str) -> Dict[str, float]:
 #                     "limited_variety": patterns["lexical_diversity"] < 0.4
 #                 }
 #             },
-#             "analysis": gpt_analysis
+#             "analysis": analysis
 #         }
         
 #     except Exception as e:
@@ -95,30 +87,26 @@ def analyze_text_patterns(text: str) -> Dict[str, float]:
 def detect_ai_content(client, text: str) -> Dict[str, Any]:
     try:
         patterns = analyze_text_patterns(text)
-        
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Analyze this text and determine if it's AI-generated. Consider writing style, natural language patterns, contextual understanding, and human-like nuances."
-                },
-                {
-                    "role": "user",
-                    "content": f"Analyze this text:\n\n{text}"
-                }
-            ],
+            messages=[{
+                "role": "system",
+                "content": "Analyze this text and determine if it's AI-generated. Consider writing style, natural language patterns, contextual understanding, and human-like nuances."
+            }, {
+                "role": "user",
+                "content": f"Analyze this text:\n\n{text}"
+            }],
             temperature=0.1
         )
         
         analysis = response.choices[0].message.content
-        is_human = "human" in analysis.lower() and "generate" in analysis.lower()
+        is_ai = "ai-generated" in analysis.lower() or "appears to be ai" in analysis.lower()
         
         pattern_score = sum(patterns.values()) / len(patterns)
         confidence = pattern_score * 0.8 + 0.2
 
         return {
-            "is_ai_generated": not is_human,  # Flip based on analysis
+            "is_ai_generated": is_ai,  # Changed from not is_human
             "confidence": confidence,
             "metrics": {
                 "pattern_analysis": patterns,
@@ -131,7 +119,6 @@ def detect_ai_content(client, text: str) -> Dict[str, Any]:
             },
             "analysis": analysis
         }
-        
     except Exception as e:
         logger.error(f"Error in AI detection: {str(e)}")
         raise HTTPException(status_code=500, detail="AI detection failed")
