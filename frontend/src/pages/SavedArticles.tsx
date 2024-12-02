@@ -24,6 +24,7 @@ interface Article {
 }
 
 const SavedArticles = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
   const { user } = useUser();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +35,7 @@ const SavedArticles = () => {
     const fetchArticles = async () => {
       if (!user) return;
       try {
-        const response = await axios.get(`http://localhost:8000/api/articles/${user.id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/articles/${user.id}`);
         setArticles(response.data);
       } catch (error) {
         console.error('Error fetching articles:', error);
@@ -48,7 +49,7 @@ const SavedArticles = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:8000/api/articles/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/articles/${id}`);
       setArticles(articles.filter(article => article.id !== id));
     } catch (error) {
       console.error('Error deleting article:', error);

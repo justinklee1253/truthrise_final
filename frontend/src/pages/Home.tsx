@@ -47,6 +47,7 @@ interface SummaryResult {
 }
 
 const Home = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
   const { user } = useUser();
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -95,7 +96,7 @@ const Home = () => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/summarize', {
+      const response = await axios.post(`${API_BASE_URL}/api/summarize`, {
         text,
         style,
         target_audience: targetAudience,
@@ -114,7 +115,7 @@ const Home = () => {
   const handleSave = async () => {
     if (!result || !user) return;
     try {
-      await axios.post('http://localhost:8000/api/articles', {
+      await axios.post(`${API_BASE_URL}/api/articles`, {
         user_id: user.id,
         original_text: text,
         summary: result.summary,
